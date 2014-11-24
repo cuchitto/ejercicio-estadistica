@@ -32,8 +32,10 @@ public function index()
 	    $resultado['sin_agrupar'] = $this->Estadistica->estadistica_sin_agrupar($datos);
 	    $resultado['agrupados'] = $this->Estadistica->estadistica_agrupado($datos, $clases);
 
-	    debug($resultado);
-	    die;
+
+	    $this->set('resultado', $resultado);
+
+	    $this->render('resultados');
 	}
 	
 
