@@ -12,7 +12,15 @@ class Estadistica extends AppModel {
  */
 public function separar_numeros($datos)
 {
-	return explode("\r\n", $datos);
+	$lista = explode("\r\n", $datos);
+
+	foreach ($lista as $key => &$numero) {
+		$numero = trim($numero);
+		if (!is_numeric($numero)) {
+			unset($lista[$key]);
+		}
+	}
+	return $lista;
 }
 
 /**
@@ -65,6 +73,76 @@ public function estadistica_sin_agrupar($datos)
  */
 public function estadistica_agrupado($datos, $clase)
 {
+	$primer_elemento = $temp_primer_elemento = current($datos);
+	$ultimo_elemento = end($datos);
+
+	$amplitud = ($ultimo_elemento - $primer_elemento + 1) / $clase;
+	
+	$tabla_clases = array();
+	
+	$suma_yifi = 0;
+	for ($i = 0; $i != $clase; $i++) {
+		$nro_clase = $i + 1;
+		$limite_inferior = $temp_primer_elemento;
+		$limite_superior = $temp_primer_elemento + $amplitud;
+		$yi = ($limite_inferior + $limite_superior ) / 2;
+
+		$fi = 0;
+		foreach ($datos as $dato) {
+			if ($dato >= $limite_inferior && $dato < $limite_superior) {
+				$fi++;
+			}
+		}
+		$hi = $fi / count($datos) * 100;
+
+		$ffi = 0;
+		foreach ($datos as $dato) {
+			if ($dato < $limite_superior) {
+				$ffi++;
+			}
+		}
+		$hhi = $ffi / count($datos) * 100;
+
+
+		$tabla_clases[] = array(
+			'nro_clase' => $nro_clase,
+			'limite_inferior' => $limite_inferior,
+			'limite_superior' => $limite_superior,
+			'yi' => $yi,
+			'fi' => $fi,
+			'hi' => $hi,
+			'ffi' => $ffi,
+			'hhi' => $hhi,
+			'yifi' => $yi * $fi,
+			);
+
+		$suma_yifi += $yi * $fi;
+
+		$temp_primer_elemento = $limite_superior;
+	}
+
+	$cosas['promedio'] = $suma_yifi / count($datos);
+
+	$sum_ultima = 0;
+	foreach ($tabla_clases as &$tb) {
+		$tb['ultima'] = $tb['fi'] * pow(($tb['yi'] - $cosas['promedio']), 2);
+		$sum_ultima += $tb['ultima'];
+	}
+
+	$cosas['clase'] = $clase;
+	$cosas['amplitud'] = $amplitud;
+
+	$cosas['varianza_poblacional'] = $sum_ultima / count($datos);
+	$cosas['varianza_muestral'] = $sum_ultima / (count($datos) - 1);
+	$cosas['desviacion_poblacional'] = sqrt($cosas['varianza_poblacional']);
+	$cosas['desviacion_muestral'] = sqrt($cosas['varianza_muestral']);
+	$cosas['cv_poblacional'] = $cosas['desviacion_poblacional'] / $cosas['promedio'] * 100;
+	$cosas['cv_muestral'] = $cosas['desviacion_muestral'] / $cosas['promedio'] * 100;
+	$cosas['rango'] = $this->rango($datos);
+	$cosas['tabla'] = $tabla_clases;
+
+
+	return $cosas;
 
 }
 

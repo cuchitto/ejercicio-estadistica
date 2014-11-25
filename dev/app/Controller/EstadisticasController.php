@@ -23,7 +23,7 @@ public function index()
 	    sort($datos);
 
 	    // si hay clase la coloca
-	    if ($this->request->data['Estadisticas']['clases']) {
+	    if (is_numeric($this->request->data['Estadisticas']['clases'])) {
 	    	$clases = (int)$this->request->data['Estadisticas']['clases'];
 	    } else { // si no la calcula
 	    	$clases = $this->Estadistica->calcular_clase($datos);
