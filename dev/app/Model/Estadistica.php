@@ -142,6 +142,136 @@ public function estadistica_agrupado($datos, $clase)
 	$cosas['tabla'] = $tabla_clases;
 
 
+	if(count($tabla_clases) > 3) {
+
+
+		$percentiles = array();
+		for ($i = 1; $i != 99; $i++) {
+			$p = $i / 100;
+			$N = count($datos);
+			$pN = $p * $N;
+
+			// buscar la clase
+			foreach ($cosas['tabla'] as $key => $datos_clase) {
+				if ($key == 0) continue;
+
+				// encuentra la clase a la que pertenece
+				if ($datos_clase['ffi'] >= $pN) {
+					if ($datos_clase['fi'] == 0) break;
+					$anterior = $key - 1;
+
+					$v = $datos_clase['limite_inferior'] + (($pN - $cosas['tabla'][$anterior]['ffi']) / $datos_clase['fi']) * $amplitud;
+					$percentiles[] = array(
+						'percentil' => $i,
+						'valor' => $v,
+						);
+					
+					break;
+
+				}
+			}
+		}
+
+		$deciles = array();
+		for ($i = 10; $i != 100; $i += 10) {
+			$p = $i / 100;
+			$N = count($datos);
+			$pN = $p * $N;
+
+			// buscar la clase
+			foreach ($cosas['tabla'] as $key => $datos_clase) {
+				if ($key == 0) continue;
+
+				// encuentra la clase a la que pertenece
+				if ($datos_clase['ffi'] >= $pN) {
+					if ($datos_clase['fi'] == 0) break;
+					$anterior = $key - 1;
+
+					$v = $datos_clase['limite_inferior'] + (($pN - $cosas['tabla'][$anterior]['ffi']) / $datos_clase['fi']) * $amplitud;
+					$deciles[] = array(
+						'decil' => $i,
+						'valor' => $v,
+						);
+					
+					break;
+
+				}
+			}
+		}
+
+		$cuartiles = array();
+		for ($i = 25; $i != 100; $i += 25) {
+			$p = $i / 100;
+			$N = count($datos);
+			$pN = $p * $N;
+
+			// buscar la clase
+			foreach ($cosas['tabla'] as $key => $datos_clase) {
+				if ($key == 0) continue;
+
+				// encuentra la clase a la que pertenece
+				if ($datos_clase['ffi'] >= $pN) {
+					if ($datos_clase['fi'] == 0) break;
+					$anterior = $key - 1;
+
+					$v = $datos_clase['limite_inferior'] + (($pN - $cosas['tabla'][$anterior]['ffi']) / $datos_clase['fi']) * $amplitud;
+					$cuartiles[] = array(
+						'cuartil' => $i,
+						'valor' => $v,
+						);
+					
+					break;
+
+				}
+			}
+		}
+
+		$cosas['percentiles'] = $percentiles;
+		$cosas['cuartiles'] = $cuartiles;
+		$cosas['deciles'] = $deciles;
+
+		$intervalo_modal = 0;
+		foreach ($cosas['tabla'] as $key => $datos_clase) {
+			if ($datos_clase['fi'] > $intervalo_modal) {
+				$intervalo_modal = $datos_clase['fi'];
+				$llave = $key;
+			}
+		}
+
+		if(isset($cosas['tabla'][$llave]['fi']) && isset($cosas['tabla'][$llave+1]['fi']) &&isset($cosas['tabla'][$llave-1]['fi'])) {
+
+		$m_fi = $cosas['tabla'][$llave]['fi'];
+		$m_fi_ant = $cosas['tabla'][$llave-1]['fi'];
+		$m_fi_sig = $cosas['tabla'][$llave+1]['fi'];
+
+		$cosas['moda'] = $cosas['tabla'][$llave]['limite_inferior'] + ($m_fi - $m_fi_ant) / (($m_fi - $m_fi_ant)+($m_fi - $m_fi_sig)) * $amplitud;
+
+		}
+		
+
+
+		// mediana
+		$p = 50 / 100;
+			$N = count($datos);
+			$pN = $p * $N;
+
+			// buscar la clase
+			foreach ($cosas['tabla'] as $key => $datos_clase) {
+				if ($key == 0) continue;
+
+				// encuentra la clase a la que pertenece
+				if ($datos_clase['ffi'] >= $pN) {
+					if ($datos_clase['fi'] == 0) break;
+					$anterior = $key - 1;
+
+					$cosas['mediana'] = $datos_clase['limite_inferior'] + (($pN - $cosas['tabla'][$anterior]['ffi']) / $datos_clase['fi']) * $amplitud;
+					
+					
+					break;
+
+				}
+			}
+		}
 	return $cosas;
 
 }
